@@ -2,82 +2,544 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ЭКГ-Рейтинг | Скоро запуск</title>
+    <title>Корп-Рейтинг Симулятор v0.2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         body { 
             font-family: 'Inter', sans-serif; 
             display: flex; flex-direction: column; align-items: center; 
-            height: 100vh; margin: 0; overflow: hidden;
-            background: linear-gradient(-45deg, #6a89cc, #b8e994, #f8c291, #e77f67);
+            height: 100vh; margin: 0; padding-top: 15px; box-sizing: border-box;
+            background: linear-gradient(-45deg, #b8e994, #f8c291, #e77f67);
             background-size: 400% 400%;
             animation: gradientBG 20s ease infinite;
+            transition: filter 0.5s ease;
         }
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-
         .stats-dashboard {
-            display: flex; gap: 10px; background: rgba(255, 255, 255, 0.7);
+            display: flex; gap: 15px; background: rgba(255, 255, 255, 0.7);
             padding: 10px; backdrop-filter: blur(10px);
             border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin-top: 20px; opacity: 0.8;
+            justify-content: space-around; z-index: 100;
         }
-        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
-        .stats-item { font-size: 12px; font-weight: 600; display: flex; align-items: center; padding: 0 10px; }
+        .stats-section { padding: 10px; border-radius: 12px; }
+        .section-header { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 14px; margin-bottom: 10px; }
+        .sub-metric { font-size: 11px; margin-bottom: 6px; position: relative; white-space: nowrap;}
+        .metric-name { display: inline-block; width: 130px; color: #555; }
+        .metric-bar-bg { display: inline-block; width: 80px; height: 6px; background: rgba(0,0,0,0.1); border-radius: 3px; vertical-align: middle;}
+        .metric-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
+        #ecology-header { color: #27ae60; } #personnel-header { color: #2980b9; } #strategy-header { color: #8e44ad; }
+        
+        .budget_management-tracker {
+            margin-top: 10px; background: rgba(0,0,0,0.6); color: white; padding: 10px 20px; border-radius: 12px;
+            font-size: 16px; font-weight: 800; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            width: 250px; transition: all 0.3s ease;
+        }
+        .budget_management-tracker-bar-bg { width: 100%; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; margin-top: 5px; overflow: hidden;}
+        .budget_management-tracker-bar-fill { height: 100%; background: #2ecc71; border-radius: 4px; transition: all 0.3s ease; }
+
+        .total-score { text-align: center; margin-top: 10px; font-size: 12px; font-weight: 600; color: #2d3436;}
+        #corp-score { font-size: 20px; font-weight: 800;}
+        
 
 
-        .stub-container {
-            flex: 1; display: flex; align-items: center; justify-content: center; width: 100%;
+        .game-area { position: relative; width: 340px; height: 420px; margin-top: 10px; perspective: 1000px; }
+        .card-stack, .card-stack-2 {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff;
+            border-radius: 24px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: transform 0.3s ease-out;
         }
+        .card-stack { z-index: 1; transform: scale(0.95) translateY(15px); opacity: 0.7; }
+        .card-stack-2 { z-index: 0; transform: scale(0.9) translateY(30px); opacity: 0.4; }
         .card {
-            width: 340px; background: white; border-radius: 30px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
-            padding: 40px 30px; text-align: center;
-            position: relative; animation: float 3s ease-in-out infinite;
+            width: 100%; height: 100%; background: white; border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15); position: absolute; z-index: 10;
+            display: flex; flex-direction: column; align-items: center; padding: 25px; box-sizing: border-box;
+            user-select: none; transition: all 0.4s ease;
         }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .card-image { width: 100%; height: 160px; background: #f0f4f8; border-radius: 16px; margin-bottom: 25px; display: flex; align-items: center; justify-content: center; font-size: 70px; }
+        .card-text { font-size: 18px; line-height: 1.4; text-align: center; color: #1a1a1a; font-weight: 600; margin-bottom: auto; }
+        .controls { display: flex; gap: 15px; margin-top: auto; width: 100%; z-index: 20; position: relative;}
+        .btn { flex: 1; padding: 18px; border: none; border-radius: 14px; cursor: pointer; font-weight: 700; font-size: 14px; transition: transform 0.1s; color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.2); line-height: 1.2; }
+        .btn:active { transform: scale(0.95); }
+        .btn-left { background: linear-gradient(135deg, #ff6b6b, #ee5253); } 
+        .btn-right { background: linear-gradient(135deg, #1dd1a1, #10ac84); }
+        .game-over { display: none; text-align: center; margin-top: 100px; z-index: 300; background: rgba(255,255,255,0.8); padding: 40px; border-radius: 20px; backdrop-filter: blur(10px); }
+        h1 { margin: 0 0 10px 0; color: #d63031; } p { color: #2d3436; }
 
-        .icon { font-size: 64px; margin-bottom: 20px; }
-        h1 { margin: 0; font-size: 24px; color: #1a1a1a; font-weight: 800; }
-        p { color: #636e72; line-height: 1.6; margin: 15px 0 25px; }
+        .preview-glow { transition: transform 0.2s, box-shadow 0.2s; transform: scale(1.05); }
+        .positive { box-shadow: 0 0 10px 3px rgba(46, 204, 113, 0.7); }
+        .negative { box-shadow: 0 0 10px 3px rgba(231, 76, 60, 0.7); }
 
-        .badge {
-            display: inline-block; background: #f1f2f6; padding: 6px 15px;
-            border-radius: 50px; font-size: 12px; font-weight: 700; color: #2f3542;
-            text-transform: uppercase; letter-spacing: 1px;
-        }
 
-        .btn-notify {
-            background: #2d3436; color: white; border: none; padding: 15px 30px;
-            border-radius: 15px; font-weight: 700; cursor: pointer; transition: 0.3s;
-            width: 100%; font-family: inherit;
-        }
-        .btn-notify:hover { transform: scale(1.05); background: #000; }
+    .grade-display {
+        margin-top: 10px;
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-weight: 800;
+        text-align: center;
+        width: 150px;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        border: 2px solid;
+    }
+    .grade-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: block;
+        opacity: 0.7;
+    }
+    .grade-value {
+        font-size: 28px;
+        display: block;
+        line-height: 1;
+    }
 
-        .footer { margin-bottom: 30px; color: rgba(255,255,255,0.8); font-size: 12px; font-weight: 600; }
+    .grade-AAA { background: #c5f0c5; color: #1c7e2a; border-color: #1c7e2a; } 
+    .grade-AA  { background: #d8f5d8; color: #2ecc71; border-color: #2ecc71; } 
+    .grade-A   { background: #eaffeaf; color: #57cc88; border-color: #57cc88; } 
+    .grade-BBB { background: #fffacd; color: #d28c0a; border-color: #d28c0a; } 
+    .grade-BB  { background: #ffe4c4; color: #e67e22; border-color: #e67e22; } 
+    .grade-B   { background: #ffc9c9; color: #c0392b; border-color: #c0392b; } 
+    .grade-CCC { background: #b0a0a0; color: #695d5d; border-color: #695d5d; } 
+    .disclaimer {
+    position: fixed;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 20px;
+    color: rgba(0,0,0,0.5);
+    background: rgba(255,255,255,0.6);
+    padding: 4px 10px;
+    border-radius: 8px;
+    backdrop-filter: blur(6px);
+    pointer-events: none;
+    z-index: 999;
+}
     </style>
 </head>
 <body>
-
     <div class="stats-dashboard">
-        <div class="stats-item"><span class="dot" style="background:#2ecc71"></span> Экология</div>
-        <div class="stats-item"><span class="dot" style="background:#3498db"></span> Кадры</div>
-        <div class="stats-item"><span class="dot" style="background:#9b59b6"></span> Государство</div>
-    </div>
-
-    <div class="stub-container">
-        <div class="card">
-            <div class="badge">Статус: Обновление</div>
-            <div class="icon">🏢</div>
-            <h1>ЭКГ-Рейтинг</h1>
-            <p>Мы обновляем симулятор до версии 0.2. Готовим новые сценарии развития бизнеса и улучшенную механику рисков.</p>
-            <button class="btn-notify" onclick="this.innerText='Скоро вернемся!'">Узнать о запуске</button>
+    <div class="stats-section" id="ecology-section">
+        <div class="section-header" id="ecology-header">🌿 Экология</div>
+        <div class="sub-metric" id="metric-ecology-eco_friendly">
+            <span class="metric-name">Экологичность</span> 
+            <div class="metric-bar-bg"><div class="metric-bar-fill" style="background:#2ecc71"></div></div>
+        </div>
+        <div class="sub-metric" id="metric-ecology-tech">
+            <span class="metric-name">НДТ</span> 
+            <div class="metric-bar-bg"><div class="metric-bar-fill" style="background:#27ae60"></div></div>
+        </div>
+        <div class="sub-metric" id="metric-ecology-policy">
+            <span class="metric-name">Эко-политика</span> 
+            <div class="metric-bar-bg"><div class="metric-bar-fill" style="background:#1abc9c"></div></div>
         </div>
     </div>
 
-    <div class="footer">
-        © 2026 ЭКГ-Рейтинг Симулятор • v0.2 In Development
+    <div class="stats-section" id="personnel-section">
+        <div class="section-header" id="personnel-header">🤝 Персонал</div>
+        <div class="sub-metric" id="metric-personnel-salary">
+            <span class="metric-name">Уровень зарплат</span> 
+            <div class="metric-bar-bg"><div class="metric-bar-fill" style="background:#3498db"></div></div>
+        </div>
+        <div class="sub-metric" id="metric-personnel-social">
+            <span class="metric-name">Соц. пакет</span> 
+            <div class="metric-bar-bg"><div class="metric-bar-fill" style="background:#2980b9"></div></div>
+        </div>
+        <div class="sub-metric" id="metric-personnel-charity">
+            <span class="metric-name">Благотворительность</span> 
+            <div class="metric-bar-bg"><div class="metric-bar-fill" style="background:#54a0ff"></div></div>
+        </div>
     </div>
 
+    <div class="stats-section" id="strategy-section">
+        <div class="section-header" id="strategy-header">⚙️ Операции</div>
+        <div class="sub-metric" id="metric-strategy-process_efficiency">
+            <span class="metric-name">Полезность процессов</span> 
+            <div class="metric-bar-bg"><div class="metric-bar-fill" style="background:#9b59b6"></div></div>
+        </div>
+        <div class="sub-metric" id="metric-strategy-budget_management">
+            <span class="metric-name">Управление бюджетом</span> 
+            <div class="metric-bar-bg"><div class="metric-bar-fill" style="background:#8e44ad"></div></div>
+        </div>
+        <div class="sub-metric" id="metric-strategy-internal_initiatives">
+            <span class="metric-name">Внутренние инициативы</span> 
+            <div class="metric-bar-bg"><div class="metric-bar-fill" style="background:#be2edd"></div></div>
+        </div>
+    </div>
+</div>
+    <div class="total-score">Общий рейтинг: <span id="corp-score">80</span> / 160</div>
+<div class="grade-display" id="grade-display">
+    <span class="grade-label">Рейтинг</span>
+    <span class="grade-value" id="grade-value">BBB</span>
+</div>
+
+    <div class="budget_management-tracker" id="budget_management-tracker">
+        <span id="budget_management-value">Финансы: 50%</span>
+        <div class="budget_management-tracker-bar-bg"><div id="budget_management-bar" class="budget_management-tracker-bar-fill" style="width: 50%;"></div></div>
+    </div>
+
+    <div class="game-area" id="game-area">
+        <div class="card-stack-2"></div><div class="card-stack"></div>
+        <div class="card" id="active-card">
+            <div class="card-image">🏢</div><p class="card-text" id="scenario-text">Загрузка...</p>
+            <div class="controls">
+                <button class="btn btn-left" id="btn-left" onmouseenter="previewImpact('left')" onmouseleave="clearPreview()" onclick="makeChoice('left')"></button>
+                <button class="btn btn-right" id="btn-right" onmouseenter="previewImpact('right')" onmouseleave="clearPreview()" onclick="makeChoice('right')"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-over" id="game-over-screen">
+        <h1>ДЕЯТЕЛЬНОСТЬ КОМПАНИИ ПРИОСТАНОВЛЕНА</h1><p id="death-reason">...</p><br>
+        <button class="btn btn-right" style="width: 200px;" onclick="location.reload()">Начать сначала</button>
+    </div>
+
+    <script>
+        const METRIC_CONFIG = {
+            ecology: { 
+                eco_friendly: { name: 'Экологичность', weight: 15 },
+                tech: { name: 'НДТ', weight: 5 },
+                policy: { name: 'Эко-политика', weight: 5 }
+            },
+            personnel: {
+                salary: { name: 'Уровень зарплат', weight: 35 },
+                social: { name: 'Соц. пакет', weight: 25 },
+                charity: { name: 'Благотворительность', weight: 5 }
+            },
+            strategy: {
+                process_efficiency: { name: 'Полезность процессов', weight: 45 },
+                budget_management: { name: 'Управление бюджетом', weight: 15 },
+                internal_initiatives: { name: 'Внутренние инициативы', weight: 10 }
+            }
+        };
+        const GRADE_CONFIG = {
+            AAA: { score: 145, color_class: "grade-AAA" },
+            AA:  { score: 130, color_class: "grade-AA" },
+            A:   { score: 115, color_class: "grade-A" },
+            BBB: { score: 100, color_class: "grade-BBB" },
+            BB:  { score: 80,  color_class: "grade-BB" },
+            B:   { score: 60,  color_class: "grade-B" },
+            CCC: { score: 0,   color_class: "grade-CCC" }
+        };
+
+        let stats = {
+            ecology: { eco_friendly: 50, tech: 50, policy: 50 },
+            personnel: { salary: 50, social: 50, charity: 50 },
+            strategy: { process_efficiency: 50, budget_management: 50, internal_initiatives: 50 },
+            company_budget_managements: 50 
+        };
+        
+        let deferred_effects = [];
+        let turnCounter = 1;
+        
+        const GEN_DATA = {
+    ecology: {
+        actors: ["Экологический отдел", "Команда зелёных инициатив", "Исследовательский центр", "Техник-эколог"],
+        problems: [
+            "рекомендуют улучшить систему переработки отходов", 
+            "предлагают перейти на биоразлагаемую упаковку", 
+            "хотят поддержать проект очистки воды", 
+            "предлагают внедрить внутреннюю систему мониторинга экологических показателей"
+        ],
+        images: ["🌿", "💧", "♻️", "🌱"],
+        choices: [
+            { t: "Следовать стандартам компании", type: "min_cost" },
+            { t: "Внедрить улучшенные эко-метрики", type: "eco_focus" }
+        ]
+    },
+    personnel: {
+        actors: ["Отдел кадров", "Команда развития сотрудников", "Учебный центр", "Координатор проектов"],
+        problems: [
+            "предлагают улучшить программу здоровья и безопасности", 
+            "хотят создать комнату отдыха", 
+            "просят выделить бюджет на обучение сотрудников", 
+            "предлагают провести внутренний командный форум"
+        ],
+        images: ["🏥", "📚", "☕", "🤝"],
+        choices: [
+            { t: "Сохраняем текущие условия", type: "min_cost" }, 
+            { t: "Инвестировать в развитие команды", type: "people_focus" }
+        ]
+    },
+    strategy: {
+        actors: ["Совет стратегического развития", "Команда планирования", "Аналитический отдел", "Проектный менеджер"],
+        problems: [
+            "рекомендуют внедрить систему внутренней отчетности", 
+            "предлагают улучшить планирование ресурсов", 
+            "предлагают автоматизировать процессы", 
+            "рекомендуют повысить прозрачность внутри компании"
+        ],
+        images: ["📊", "📈", "⚙️", "🛡️"],
+        choices: [
+            { t: "Следовать текущим процедурам", type: "min_cost" }, 
+            { t: "Внедрить улучшенные процессы", type: "strategy_focus" }
+        ]
+    }
+};
+
+        const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
+        const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+        function generateRandomCard() {
+            const type = rand(['ecology', 'personnel', 'strategy']);
+            const data = GEN_DATA[type];
+            const actor = rand(data.actors);
+            const problem = rand(data.problems);
+
+            const cost = randInt(1, 15);   
+            const impact = randInt(5, 20); 
+
+            let goodEffect = { company_budget_managements: -cost };
+            let badEffect = { company_budget_managements: Math.floor(cost * 0.3) };
+
+            if (type === 'ecology') {
+                goodEffect.ecology = { eco_friendly: impact, tech: 5 };
+                badEffect.ecology = { eco_friendly: -impact };
+            } else if (type === 'personnel') {
+                goodEffect.personnel = { social: impact };
+                badEffect.personnel = { social: -impact };
+            } else if (type === 'strategy') {
+                goodEffect.strategy = { process_efficiency: impact };
+                badEffect.strategy = { process_efficiency: -impact };
+            }
+
+                        let deferred = null;
+                        if (Math.random() < 0.30) {
+                            deferred = [{
+                                turns: randInt(2, 5),
+                                text: `Последствия решения по запросу "${actor}" настигли вас! Рейтинг падает.`,
+                                effect: { 
+                                    company_budget_managements: -randInt(1, 10), 
+                                    [type]: type === 'ecology' ? { policy: -randInt(1, 10) } : (type === 'personnel' ? { salary: -randInt(1, 10) } : { budget_management: -randInt(1, 10) })
+                                }
+                            }];
+                        }
+
+            return {
+                text: `${actor} ${problem}. Как поступим?`,
+                image: rand(data.images),
+                isGenerated: true,
+                left: { text: data.choices[0].t, effect: badEffect, deferred_effects: deferred },
+                right: { text: data.choices[1].t, effect: goodEffect }
+            };
+        }
+
+        let currentCard = null;
+        let scenarios = [];
+        
+        function makeChoice(side) {
+            clearPreview();
+            const choice = currentCard[side];
+            const immediate_effect = choice.effect || {};
+            const new_deferred = choice.deferred_effects || [];
+
+            applyEffects(immediate_effect);
+            
+            new_deferred.forEach(eff => {
+                deferred_effects.push({
+                    turns_left: eff.turns,
+                    effect: eff.effect,
+                    text: eff.text,
+                    source_turn: turnCounter
+                });
+            });
+
+            updateAllUI();
+            animateCardOut(side);
+        }
+        
+        function applyEffects(effect) {
+             for (const section in effect) {
+                if (section === 'company_budget_managements') {
+                    stats.company_budget_managements += effect[section];
+                } else {
+                    for (const subKey in effect[section]) {
+                        if (stats[section] && stats[section][subKey] !== undefined) {
+                            stats[section][subKey] += effect[section][subKey];
+                        }
+                    }
+                }
+            }
+
+            for (const section in stats) {
+                 if (typeof stats[section] === 'object'){
+                    for (const subKey in stats[section]) {
+                         stats[section][subKey] = Math.max(0, Math.min(100, stats[section][subKey]));
+                    }
+                 } else {
+                    stats.company_budget_managements = Math.max(0, Math.min(100, stats.company_budget_managements));
+                 }
+            }
+        }
+
+        function advanceTurn() {
+            turnCounter++;
+            const triggered_effects = [];
+            
+            deferred_effects = deferred_effects.filter(eff => {
+                eff.turns_left--;
+                if (eff.turns_left <= 0) {
+                    triggered_effects.push(eff);
+                    return false;
+                }
+                return true;
+            });
+            
+            if (triggered_effects.length > 0) {
+                let notification_text = "События прошлых решений:\n";
+                triggered_effects.forEach(eff => {
+                    applyEffects(eff.effect);
+                    notification_text += `\n- ${eff.text}`;
+                });
+                showNotification(notification_text);
+                updateAllUI();
+            }
+        }
+
+        function showNotification(text) {
+            alert(text);
+        }
+
+        function updateGradeDisplay(score) {
+            const gradeDisplay = document.getElementById('grade-display');
+            let currentGrade = 'CCC';
+            
+            gradeDisplay.className = 'grade-display';
+
+            for (const grade in GRADE_CONFIG) {
+                if (score >= GRADE_CONFIG[grade].score) {
+                    currentGrade = grade;
+                    gradeDisplay.classList.add(GRADE_CONFIG[grade].color_class);
+                    break;
+                }
+            }
+            if(gradeDisplay.classList.length === 1){
+                 gradeDisplay.classList.add(GRADE_CONFIG.CCC.color_class);
+            }
+            document.getElementById('grade-value').innerText = currentGrade;
+        }
+
+        function updateAllUI() {
+            let totalScore = 0;
+            for (const section in METRIC_CONFIG) {
+                for (const subKey in METRIC_CONFIG[section]) {
+                    const value = stats[section][subKey];
+                    const weight = METRIC_CONFIG[section][subKey].weight;
+                    totalScore += (value / 100) * weight;
+                    const bar = document.querySelector(`#metric-${section}-${subKey} .metric-bar-fill`);
+                    if(bar) bar.style.width = value + '%';
+                }
+            }
+
+            const roundedScore = Math.round(totalScore);
+            document.getElementById('corp-score').innerText = roundedScore;
+            
+            updateGradeDisplay(roundedScore);
+
+            const budget_managementValue = stats.company_budget_managements;
+            const budget_managementTracker = document.getElementById('budget_management-tracker');
+            const budget_managementBar = document.getElementById('budget_management-bar');
+            document.getElementById('budget_management-value').innerText = `Бюджет: ${budget_managementValue}%`;
+            budget_managementBar.style.width = budget_managementValue + '%';
+            if(budget_managementValue < 25) { budget_managementBar.style.background = '#e74c3c'; budget_managementTracker.classList.add('negative'); } 
+            else if (budget_managementValue < 50) { budget_managementBar.style.background = '#f1c40f'; budget_managementTracker.classList.remove('negative'); } 
+            else { budget_managementBar.style.background = '#2ecc71'; budget_managementTracker.classList.remove('negative'); }
+        }
+
+        function previewImpact(side) {
+            const effect = scenarios[currentCardIndex][side].effect || {};
+             for (const section in effect) {
+                if (section === 'company_budget_managements'){
+                    document.getElementById('budget_management-tracker').classList.add(effect[section] > 0 ? 'positive' : 'negative', 'preview-glow');
+                } else {
+                    for (const subKey in effect[section]) {
+                       document.getElementById(`metric-${section}-${subKey}`).classList.add(effect[section][subKey] > 0 ? 'positive' : 'negative', 'preview-glow');
+                    }
+                }
+            }
+        }
+
+        function clearPreview() {
+            document.querySelectorAll('.preview-glow').forEach(el => el.classList.remove('positive', 'negative', 'preview-glow'));
+        }
+        
+        function animateCardOut(side) {
+            const cardElement = document.getElementById('active-card');
+            const rotation = side === 'left' ? -15 : 15;
+            const xMove = side === 'left' ? -150 : 150;
+            cardElement.style.transform = `translateX(${xMove}%) rotate(${rotation}deg)`;
+            setTimeout(prepareNextCard, 400);
+        }
+        function prepareNextCard() {
+            advanceTurn();
+            if(checkGameOver()) return;
+            const cardElement = document.getElementById('active-card');
+            cardElement.style.transition = 'none';
+            cardElement.style.transform = 'scale(0.8)'; cardElement.style.opacity = '0';
+            loadCard();
+            setTimeout(() => { 
+                cardElement.style.transition = 'all 0.4s ease';
+                cardElement.style.transform = 'scale(1) rotate(0) translateX(0)'; 
+                cardElement.style.opacity = '1';
+            }, 50);
+        }
+
+        function loadCard() {
+                    if (scenarios.length > 0) {
+                        currentCard = scenarios.shift(); 
+                    } else {
+                        currentCard = generateRandomCard(); 
+                    }
+
+                    document.getElementById('scenario-text').innerText = currentCard.text;
+                    document.querySelector('.card-image').innerText = currentCard.image;
+                    document.getElementById('btn-left').innerText = currentCard.left.text;
+                    document.getElementById('btn-right').innerText = currentCard.right.text;
+                }
+
+        function checkGameOver() {
+            if (stats.company_budget_managements <= 0) {
+                 gameOver('Финансы исчерпаны. Компания объявлена банкротом.'); return true;
+            }
+             for (const section in METRIC_CONFIG) {
+                for (const subKey in METRIC_CONFIG[section]) {
+                     if (stats[section][subKey] <= 0) {
+                        gameOver(`Критическое падение показателя "${METRIC_CONFIG[section][subKey].name}". Компания теряет рейтинг и доверие.`); return true;
+                     }
+                }
+            }
+            return false;
+        }
+
+        function gameOver(reason, isWin = false) {
+             if (isWin) {
+                document.querySelector('.game-over h1').innerText = "ПОЗДРАВЛЯЕМ!";
+                document.querySelector('.game-over h1').style.color = "#27ae60";
+            }
+            document.querySelector('.stats-dashboard').style.display = 'none';
+            document.querySelector('.total-score').style.display = 'none';
+            document.getElementById('budget_management-tracker').style.display = 'none';
+            document.getElementById('game-area').style.display = 'none';
+            document.getElementById('game-over-screen').style.display = 'block';
+            document.getElementById('death-reason').innerText = reason;
+        }
+        
+                        scenarios = [
+                            {
+                                text: "Добро пожаловать в симулятор корпоративного рейтинга. Управляйте компанией, балансируя между ключевыми показателями. Готовы?",
+                                image: "📊",
+                                left: { text: "Позже", effect: {} },
+                                right: { text: "Начать!", effect: {} }
+                            }
+                        ];
+        document.addEventListener("DOMContentLoaded", () => {
+            loadCard();
+            updateAllUI();
+        });
+    </script>
+    <div class="disclaimer">
+    Игровая модель. Все события случайны.
+</div>
 </body>
 </html>
