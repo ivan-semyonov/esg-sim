@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ЭКГ-Рейтинг | Скоро запуск</title>
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            display: flex; flex-direction: column; align-items: center; 
+            height: 100vh; margin: 0; overflow: hidden;
+            background: linear-gradient(-45deg, #6a89cc, #b8e994, #f8c291, #e77f67);
+            background-size: 400% 400%;
+            animation: gradientBG 20s ease infinite;
+        }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+
+        .stats-dashboard {
+            display: flex; gap: 10px; background: rgba(255, 255, 255, 0.7);
+            padding: 10px; backdrop-filter: blur(10px);
+            border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-top: 20px; opacity: 0.8;
+        }
+        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .stats-item { font-size: 12px; font-weight: 600; display: flex; align-items: center; padding: 0 10px; }
+
+
+        .stub-container {
+            flex: 1; display: flex; align-items: center; justify-content: center; width: 100%;
+        }
+        .card {
+            width: 340px; background: white; border-radius: 30px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            padding: 40px 30px; text-align: center;
+            position: relative; animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        .icon { font-size: 64px; margin-bottom: 20px; }
+        h1 { margin: 0; font-size: 24px; color: #1a1a1a; font-weight: 800; }
+        p { color: #636e72; line-height: 1.6; margin: 15px 0 25px; }
+
+        .badge {
+            display: inline-block; background: #f1f2f6; padding: 6px 15px;
+            border-radius: 50px; font-size: 12px; font-weight: 700; color: #2f3542;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .btn-notify {
+            background: #2d3436; color: white; border: none; padding: 15px 30px;
+            border-radius: 15px; font-weight: 700; cursor: pointer; transition: 0.3s;
+            width: 100%; font-family: inherit;
+        }
+        .btn-notify:hover { transform: scale(1.05); background: #000; }
+
+        .footer { margin-bottom: 30px; color: rgba(255,255,255,0.8); font-size: 12px; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="stats-dashboard">
+        <div class="stats-item"><span class="dot" style="background:#2ecc71"></span> Экология</div>
+        <div class="stats-item"><span class="dot" style="background:#3498db"></span> Кадры</div>
+        <div class="stats-item"><span class="dot" style="background:#9b59b6"></span> Государство</div>
+    </div>
+
+    <div class="stub-container">
+        <div class="card">
+            <div class="badge">Статус: Обновление</div>
+            <div class="icon">🏢</div>
+            <h1>ЭКГ-Рейтинг</h1>
+            <p>Мы обновляем симулятор до версии 0.2. Готовим новые сценарии развития бизнеса и улучшенную механику рисков.</p>
+            <button class="btn-notify" onclick="this.innerText='Скоро вернемся!'">Узнать о запуске</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        © 2026 ЭКГ-Рейтинг Симулятор • v0.2 In Development
+    </div>
+
+</body>
+</html>
